@@ -1,0 +1,1 @@
+Auto tagManager/Analytics/Metrika.
