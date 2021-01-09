@@ -1,1 +1,1 @@
-V.1. Auto GTM - ✅ Auto Analytics - × Auto Metrika - × Auto tagManager/Analytics/Metrika.
+Version 1.1
