@@ -14,11 +14,14 @@ using Google.Apis.Services;
 using Google.Apis.TagManager.v2.Data;
 using Google.Apis.Util.Store;
 using Google.Apis.Analytics.v3.Data;
-
+using Google.Apis.Analytics.v3;
+using System.Net.Http;
 namespace ConsoleApp2
 {
     public class gtm
     {
+        private string analyticsId;
+        private string metrikaId;
         private TagManagerService service;
         private variable var = new();
         private trigger trig = new();
@@ -42,8 +45,8 @@ namespace ConsoleApp2
             [7] = new List<string>() {"fbId", "c", "0"},
             [8] = new List<string>() {"mtrgtId", "c", "0"},
             [9] = new List<string>() {"optId", "c", "0"},
-            [10] = new List<string>() {"uaSettings", "c", Console.ReadLine()},
-            [11] = new List<string>() {"mtrkId", "c", Console.ReadLine()},
+            [10] = new List<string>() {"uaSettings", "c", "analyticsId"},
+            [11] = new List<string>() {"mtrkId", "c", "metrikaId"},
         };
 
         private Dictionary<int, List<string>> triggersInfo = new()
@@ -77,9 +80,13 @@ namespace ConsoleApp2
             getTriggers();
             return triggersId;
         }
-        public gtm(TagManagerService serviceInput)
+        public gtm(TagManagerService serviceInput, string analyticsIdInput, string metrikaIdInput)
         {
             service = serviceInput;
+            analyticsId = analyticsIdInput;
+            variablesInfo[10] = new List<string>() {"uaSettings", "c", analyticsId};
+            metrikaId = metrikaIdInput;
+            variablesInfo[11] = new List<string>() {"mtrkId", "c", metrikaId};
         }
 
         public void setGtmData(string a, string c, string w)
@@ -196,10 +203,21 @@ namespace ConsoleApp2
         
         public void setAnalyticsData(string a, string w, string p)
         {
-            
+            AccountId = a;
+            WebPropertyId = w;
+            profileId = p;
         }
     }
 
+    public class yaMetrika
+    {
+        private string metrikaId;
+
+        public void setMetrikaData(string i)
+        {
+            metrikaId = i;
+        }
+    }
     internal class Program
     {
         [STAThread]
@@ -215,7 +233,7 @@ namespace ConsoleApp2
             UserCredential credential;
             using (var stream =
                 new FileStream(
-                    "client_secret_290942768668-vmutkss3qurnhst10f04lt2h49cn9ih3.apps.googleusercontent.com.json",
+                    "client_secret_290942768668-6u6v233nm7besbb9hdca6m98abdtf5u7.apps.googleusercontent.com.json",
                     FileMode.Open, FileAccess.Read))
             {
                 credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -232,20 +250,20 @@ namespace ConsoleApp2
             {
                 HttpClientInitializer = credential,
             });
-            string gtmAccountId = "6002106805";
-            string gtmContainerId = "36837404";
-            string gtmWorkspaceId = "1";
+            string gtmAccountId = "6002331513";
+            string gtmContainerId = "33474630";
+            string gtmWorkspaceId = "18";
             string analyticsAccountId = "184739284";
-            string analyticsProfileId = "UA-184739284-1";
-            string analyticsWebPropertyId = "234852749";
-            Console.WriteLine("UA ID: ");
-            Console.WriteLine("MTRK ID: ");
-            gtm myacc = new(service);
+            string analyticsProfileId = "UA-181312454-1";
+            string analyticsWebPropertyId = "235366299";
+            string metrikaId = "70860973";
+            gtm myacc = new(service,analyticsProfileId,metrikaId);
+            gAnalytics myGaAccount = new();
             myacc.setGtmData(gtmAccountId, gtmContainerId, gtmWorkspaceId);
-            //myacc.createVariables();
+            myacc.createVariables();
             //myacc.createTrigges();
             //myacc.createTags(myacc.getTriggersId());
-            gAnalytics myGaAccount = new();
+            
         }
     }
 }
