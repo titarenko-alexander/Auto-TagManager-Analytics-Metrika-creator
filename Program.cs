@@ -217,10 +217,10 @@ namespace ConsoleApp2
     {
         private string metrikaId;
         private string token;
-        public JObject createGoals()
+        public string createGoals(Dictionary<string,List<string>> goals)
         {
             yandexApi.Goals ya = new();
-            return(ya.createGoals(token,metrikaId));
+            return(ya.createGoals(token,metrikaId,goals));
         }
 
         public JObject editGoals(string goalId)
@@ -283,7 +283,13 @@ namespace ConsoleApp2
             gAnalytics myGaAccount = new();
             yaMetrika myYaMetrika = new();
             myYaMetrika.setMetrikaData(metrikaId, token);
-            Console.WriteLine(myYaMetrika.createGoals());
+            Dictionary<string, List<string>> goals = new()
+            {
+                ["0"] = new List<string>(){"Интерес", "1", "Event", "1", "true", "acntx", "interest", "site"},
+                ["1"] = new List<string>(){"Внимание", "2", "Event", "1", "true", "acntx", "stay", "site"},
+                ["2"] = new List<string>(){"Лид", "3", "Event", "1", "true", "acntx", "lead", "form"}
+            };
+            Console.WriteLine(myYaMetrika.createGoals(goals));
             //myacc.setGtmData(gtmAccountId, gtmContainerId, gtmWorkspaceId);
             //myacc.createVariables();
             //myacc.createTrigges();

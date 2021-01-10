@@ -55,37 +55,45 @@ namespace ConsoleApp2
                 JObject parsed = JObject.Parse(content);
                 return (parsed);
             }
-            public JObject createGoals(string token, string metrikaId)
+            public string createGoals(string token, string metrikaId, Dictionary<string,List<string>> goalslist)
             {
-                HttpClient client = new();
-                Dictionary<string,string> condiditionsParameters = new()
+                Console.WriteLine(goalslist["0"][0]);
+                for (int i = 0; i < goalslist.Count; i++)
                 {
-                    {"type","exact"},
-                    {"url","your_mom_is_fat"},
-                    
-                };
-                List<Dictionary<string, string>> conditionsParams = new() {condiditionsParameters};
-                var goalParams = new
-                {
-                    name = "goaling",
-                    type = "action",
-                    is_retargeting = 0,
-                    conditions = conditionsParams,
-                };
-                var pocoObject = new {
-                    goal = goalParams,
-                };
-                var myContent = JsonConvert.SerializeObject(pocoObject);
-                var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
-                Console.WriteLine(JObject.Parse(myContent));
-                var byteContent = new ByteArrayContent(buffer);
-                byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-               
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("OAuth",token);
-                var result = client.PostAsync($"https://api-metrika.yandex.net/management/v1/counter/{metrikaId}/goals",byteContent);
-                var content = result.Result.Content.ReadAsStringAsync().Result;
-                JObject parsed = JObject.Parse(content);
-                return(parsed);
+                    HttpClient client = new();
+                    Dictionary<string, string> condiditionsParameters = new()
+                    {
+                        {"type", "exact"},
+                        {"url", $"{goalslist[Convert.ToString(i)][5]}_{goalslist[Convert.ToString(i)][6]}_{goalslist[Convert.ToString(i)][7]}"},
+
+                    };
+                    List<Dictionary<string, string>> conditionsParams = new() {condiditionsParameters};
+                    var goalParams = new
+                    {
+                        name = goalslist[Convert.ToString(i)][0],
+                        type = "action",
+                        is_retargeting = 0,
+                        conditions = conditionsParams,
+                    };
+                    var data = new
+                    {
+                        goal = goalParams,
+                    };
+                    var myContent = JsonConvert.SerializeObject(data);
+                    var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
+                    var body = new ByteArrayContent(buffer);
+                    body.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("OAuth", token);
+                    var result =
+                        client.PostAsync($"https://api-metrika.yandex.net/management/v1/counter/{metrikaId}/goals",
+                            body);
+                    var content = result.Result.Content.ReadAsStringAsync().Result;
+                    JObject parsed = JObject.Parse(content);
+                    Console.WriteLine(parsed);
+                    Console.WriteLine($"Цель {goalslist[Convert.ToString(i)][0]} создана");
+                }
+
+                return ("Все Цели созданы");
             }
         }
         
