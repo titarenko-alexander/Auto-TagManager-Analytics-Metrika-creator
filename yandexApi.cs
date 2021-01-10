@@ -55,9 +55,8 @@ namespace ConsoleApp2
                 JObject parsed = JObject.Parse(content);
                 return (parsed);
             }
-            public string createGoals(string token, string metrikaId, Dictionary<string,List<string>> goalslist)
+            public void createGoals(string token, string metrikaId, Dictionary<string,List<string>> goalslist)
             {
-                Console.WriteLine(goalslist["0"][0]);
                 for (int i = 0; i < goalslist.Count; i++)
                 {
                     HttpClient client = new();
@@ -88,12 +87,9 @@ namespace ConsoleApp2
                         client.PostAsync($"https://api-metrika.yandex.net/management/v1/counter/{metrikaId}/goals",
                             body);
                     var content = result.Result.Content.ReadAsStringAsync().Result;
-                    JObject parsed = JObject.Parse(content);
-                    Console.WriteLine(parsed);
                     Console.WriteLine($"Цель {goalslist[Convert.ToString(i)][0]} создана");
                 }
-
-                return ("Все Цели созданы");
+                System.Threading.Thread.Sleep(3000);
             }
         }
         

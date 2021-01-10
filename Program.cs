@@ -204,12 +204,28 @@ namespace ConsoleApp2
         private string AccountId;
         private string WebPropertyId;
         private string profileId;
-        
-        public void setAnalyticsData(string a, string w, string p)
+        private AnalyticsService service;
+        public void setAnalyticsData(string a, string w, string p, AnalyticsService s)
         {
             AccountId = a;
             WebPropertyId = w;
             profileId = p;
+            service = s;
+        }
+        
+        public string createGoals(Dictionary<string, List<string>> goals)
+        {
+            gAnalyticsApi ga = new();
+            ga.setAnalyticsData(profileId,WebPropertyId,AccountId, service);
+            ga.createGoals(goals, service);
+            return "Okay";
+        }
+        public string getGoals()
+        {
+            gAnalyticsApi ga = new();
+            ga.setAnalyticsData(profileId,WebPropertyId,AccountId, service);
+            ga.getGoals();
+            return "Okay";
         }
     }
 
@@ -217,10 +233,10 @@ namespace ConsoleApp2
     {
         private string metrikaId;
         private string token;
-        public string createGoals(Dictionary<string,List<string>> goals)
+        public void createGoals(Dictionary<string,List<string>> goals)
         {
             yandexApi.Goals ya = new();
-            return(ya.createGoals(token,metrikaId,goals));
+            ya.createGoals(token,metrikaId,goals);
         }
 
         public JObject editGoals(string goalId)
@@ -239,61 +255,78 @@ namespace ConsoleApp2
             token = oAuthtoken;
         }
     }
-    internal class Program
+
+    public class userData
     {
-        [STAThread]
-        static void Main()
+        private UserCredential credentials;
+        public void oAuthPass()
         {
-            Console.WriteLine("GTM");
-            Console.WriteLine("================================");
-            new Program().Run().Wait();
+            Random rndId = new Random();
+            UserCredential credential;
+            var stream = new FileStream(
+                "client_secret_290942768668-6u6v233nm7besbb9hdca6m98abdtf5u7.apps.googleusercontent.com.json",
+                FileMode.Open, FileAccess.Read);
+            credential = (GoogleWebAuthorizationBroker.AuthorizeAsync(GoogleClientSecrets.Load(stream).Secrets,
+                new[]
+                {
+                    TagManagerService.Scope.TagmanagerManageAccounts,
+                    TagManagerService.Scope.TagmanagerEditContainers,
+                    AnalyticsService.Scope.AnalyticsEdit,
+                }, Convert.ToString(rndId.NextDouble()), CancellationToken.None).Result);
+            credentials = credential;
+            Console.WriteLine($"Your user.id for now is = {credential.UserId}");
         }
 
-        private async Task Run()
+        public AnalyticsService getAnalyticsService()
         {
-            UserCredential credential;
-            using (var stream =
-                new FileStream(
-                    "client_secret_290942768668-6u6v233nm7besbb9hdca6m98abdtf5u7.apps.googleusercontent.com.json",
-                    FileMode.Open, FileAccess.Read))
+            var analyticsService = new AnalyticsService(new BaseClientService.Initializer()
             {
-                credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    new[]
-                    {
-                        TagManagerService.Scope.TagmanagerManageAccounts,
-                        TagManagerService.Scope.TagmanagerEditContainers,
-                        AnalyticsService.Scope.AnalyticsEdit,
-                    },
-                    "user", CancellationToken.None);
-            }
-            var service = new TagManagerService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
+                HttpClientInitializer = credentials,
             });
+            return analyticsService;
+        }
+        public TagManagerService getGTMService()
+        {
+            var gtmService = new TagManagerService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credentials,
+            });
+            return gtmService;
+        }
+    }
+    public class Program
+    {
+        static void Main()
+        {
+            userData credentials = new();
+            credentials.oAuthPass();
+            Console.WriteLine("GTM");
+            Console.WriteLine("================================");
             string gtmAccountId = "6002331513";
             string gtmContainerId = "33474630";
             string gtmWorkspaceId = "18";
             string analyticsAccountId = "184739284";
-            string analyticsProfileId = "UA-181312454-1";
-            string analyticsWebPropertyId = "235366299";
+            string analyticsProfileId = "235497904";
+            string analyticsWebPropertyId = "UA-184739284-1";
             string metrikaId = "70081573";
-            string token = "AgAAAABITB3qAAa_C7gd041-vUBTkwNKz7VNuH0";
-            gtm myacc = new(service,analyticsProfileId,metrikaId);
-            gAnalytics myGaAccount = new();
+            string metrikaToken = "AgAAAABITB3qAAa_C7gd041-vUBTkwNKz7VNuH0";
+            gtm myacc = new(credentials.getGTMService(),analyticsProfileId,metrikaId);
+            gAnalytics myGAnalytics= new();
             yaMetrika myYaMetrika = new();
-            myYaMetrika.setMetrikaData(metrikaId, token);
+            myYaMetrika.setMetrikaData(metrikaId, metrikaToken);
+            myGAnalytics.setAnalyticsData(analyticsAccountId,analyticsWebPropertyId,analyticsProfileId, credentials.getAnalyticsService());
             Dictionary<string, List<string>> goals = new()
             {
                 ["0"] = new List<string>(){"Интерес", "1", "Event", "1", "true", "acntx", "interest", "site"},
                 ["1"] = new List<string>(){"Внимание", "2", "Event", "1", "true", "acntx", "stay", "site"},
                 ["2"] = new List<string>(){"Лид", "3", "Event", "1", "true", "acntx", "lead", "form"}
             };
-            Console.WriteLine(myYaMetrika.createGoals(goals));
-            //myacc.setGtmData(gtmAccountId, gtmContainerId, gtmWorkspaceId);
-            //myacc.createVariables();
-            //myacc.createTrigges();
-            //myacc.createTags(myacc.getTriggersId());
+            myacc.setGtmData(gtmAccountId, gtmContainerId, gtmWorkspaceId);
+            myacc.createVariables();
+            myacc.createTrigges();
+            myacc.createTags(myacc.getTriggersId());
+            myGAnalytics.createGoals(goals);
+            myYaMetrika.createGoals(goals);
         }
     }
 }
