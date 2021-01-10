@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -16,6 +17,9 @@ using Google.Apis.Util.Store;
 using Google.Apis.Analytics.v3.Data;
 using Google.Apis.Analytics.v3;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
+
 namespace ConsoleApp2
 {
     public class gtm
@@ -212,10 +216,27 @@ namespace ConsoleApp2
     public class yaMetrika
     {
         private string metrikaId;
-
-        public void setMetrikaData(string i)
+        private string token;
+        public JObject createGoals()
         {
-            metrikaId = i;
+            yandexApi.Goals ya = new();
+            return(ya.createGoals(token,metrikaId));
+        }
+
+        public JObject editGoals(string goalId)
+        {
+            yandexApi.Goals ya = new();
+            return (ya.editGoals(token, metrikaId, goalId));
+        }
+        public JObject getGoals()
+        {
+            yandexApi.Goals ya = new();
+            return (ya.getGoals(token, metrikaId));
+        }
+        public void setMetrikaData(string id, string oAuthtoken)
+        {
+            metrikaId = id;
+            token = oAuthtoken;
         }
     }
     internal class Program
@@ -256,14 +277,17 @@ namespace ConsoleApp2
             string analyticsAccountId = "184739284";
             string analyticsProfileId = "UA-181312454-1";
             string analyticsWebPropertyId = "235366299";
-            string metrikaId = "70860973";
+            string metrikaId = "70081573";
+            string token = "AgAAAABITB3qAAa_C7gd041-vUBTkwNKz7VNuH0";
             gtm myacc = new(service,analyticsProfileId,metrikaId);
             gAnalytics myGaAccount = new();
-            myacc.setGtmData(gtmAccountId, gtmContainerId, gtmWorkspaceId);
-            myacc.createVariables();
+            yaMetrika myYaMetrika = new();
+            myYaMetrika.setMetrikaData(metrikaId, token);
+            Console.WriteLine(myYaMetrika.createGoals());
+            //myacc.setGtmData(gtmAccountId, gtmContainerId, gtmWorkspaceId);
+            //myacc.createVariables();
             //myacc.createTrigges();
             //myacc.createTags(myacc.getTriggersId());
-            
         }
     }
 }
